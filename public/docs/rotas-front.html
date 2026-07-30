@@ -306,7 +306,8 @@
   <p>
     Além da API JSON, o app tem telas HTML prontas para gerenciar usuários. Após um login válido
     (<code>/users/sign_in</code>) ou cadastro (<code>/users/sign_up</code>), o usuário é
-    <strong>redirecionado automaticamente para <code>/admin/users</code></strong> (tela de lista).
+    <strong>redirecionado automaticamente para a página que tentou acessar originalmente</strong>
+    (quando houver) ou para <code>/admin/users</code> (tela de lista).
     Acessar qualquer rota <code>/admin/*</code> sem sessão redireciona para o formulário de login.
   </p>
 
