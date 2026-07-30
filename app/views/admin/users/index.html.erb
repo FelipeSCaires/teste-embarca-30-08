@@ -1,0 +1,53 @@
+<% content_for :title, "Usuários" %>
+
+<div class="admin">
+  <header class="admin__header">
+    <div>
+      <h1>Gerenciamento de usuários</h1>
+      <p class="admin__session">Logado como <strong><%= current_user.email %></strong></p>
+    </div>
+    <div class="admin__actions">
+      <%= link_to "Novo usuário", new_admin_user_path, class: "btn btn--primary" %>
+      <%= button_to "Sair", destroy_user_session_path, method: :delete, class: "btn btn--ghost" %>
+    </div>
+  </header>
+
+  <% if @users.any? %>
+    <table class="admin__table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Criado em</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td><%= user.id %></td>
+            <td><%= user.name.presence || "—" %></td>
+            <td>
+              <%= user.email %>
+              <% if user == current_user %>
+                <span class="badge">você</span>
+              <% end %>
+            </td>
+            <td><%= l(user.created_at, format: :short) %></td>
+            <td class="admin__row-actions">
+              <%= link_to "Editar", edit_admin_user_path(user), class: "btn btn--small" %>
+              <% unless user == current_user %>
+                <%= button_to "Excluir", admin_user_path(user), method: :delete,
+                      class: "btn btn--small btn--danger",
+                      data: { turbo_confirm: "Excluir o usuário #{user.email}?" } %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="admin__empty">Nenhum usuário cadastrado ainda.</p>
+  <% end %>
+</div>

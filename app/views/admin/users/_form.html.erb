@@ -1,0 +1,42 @@
+<%= form_with model: [ :admin, user ], class: "admin__form" do |f| %>
+  <% if user.errors.any? %>
+    <div class="form-errors">
+      <strong><%= pluralize(user.errors.count, "erro impediu", plural: "erros impediram") %> o salvamento:</strong>
+      <ul>
+        <% user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name, "Nome" %>
+    <%= f.text_field :name %>
+  </div>
+
+  <div class="field">
+    <%= f.label :email, "E-mail" %>
+    <%= f.email_field :email, required: true %>
+  </div>
+
+  <div class="field">
+    <%= f.label :password, "Senha" %>
+    <%= f.password_field :password, autocomplete: "new-password" %>
+    <% if user.persisted? %>
+      <small>Deixe em branco para manter a senha atual.</small>
+    <% else %>
+      <small>Mínimo de 6 caracteres.</small>
+    <% end %>
+  </div>
+
+  <div class="field">
+    <%= f.label :password_confirmation, "Confirmação de senha" %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+  </div>
+
+  <div class="admin__form-actions">
+    <%= f.submit class: "btn btn--primary" %>
+    <%= link_to "Cancelar", admin_users_path, class: "btn btn--ghost" %>
+  </div>
+<% end %>

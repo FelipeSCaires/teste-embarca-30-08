@@ -1,0 +1,6 @@
+<% content_for :title, "Editar usuário" %>
+
+<div class="admin admin--narrow">
+  <h1>Editar usuário <span class="admin__subtitle"><%= @user.email %></span></h1>
+  <%= render "form", user: @user %>
+</div>

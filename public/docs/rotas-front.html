@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Documentação de Rotas — Front-end</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --card: #ffffff;
+      --text: #1f2933;
+      --muted: #5b6b79;
+      --border: #dde3ea;
+      --accent: #6b21a8;
+      --code-bg: #f1f3f7;
+      --get: #1d6f42;
+      --post: #1d4ed8;
+      --patch: #b45309;
+      --delete: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    header { border-bottom: 2px solid var(--accent); padding-bottom: 1rem; margin-bottom: 2rem; }
+    h1 { margin: 0 0 .25rem; font-size: 1.7rem; }
+    h2 { margin-top: 2.5rem; font-size: 1.3rem; border-bottom: 1px solid var(--border); padding-bottom: .35rem; }
+    h3 { margin-top: 1.75rem; font-size: 1.05rem; }
+    p.sub { color: var(--muted); margin: 0; }
+    .aviso {
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      border-left: 4px solid #ea580c;
+      border-radius: 6px;
+      padding: .75rem 1rem;
+      margin: 1rem 0;
+    }
+    .nota {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-left: 4px solid #2563eb;
+      border-radius: 6px;
+      padding: .75rem 1rem;
+      margin: 1rem 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td { padding: .55rem .75rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { background: var(--code-bg); font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    code {
+      background: var(--code-bg);
+      padding: .12rem .35rem;
+      border-radius: 4px;
+      font-family: "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .86em;
+    }
+    pre {
+      background: #1e2530;
+      color: #e6edf3;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: .84rem;
+      line-height: 1.5;
+    }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    .metodo {
+      display: inline-block;
+      min-width: 3.6rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: .74rem;
+      padding: .15rem .4rem;
+      border-radius: 4px;
+      color: #fff;
+      font-family: Menlo, Consolas, monospace;
+    }
+    .get { background: var(--get); }
+    .post { background: var(--post); }
+    .patch { background: var(--patch); }
+    .delete { background: var(--delete); }
+    footer { margin-top: 3rem; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Documentação de Rotas — Front-end</h1>
+    <p class="sub">API de usuários (Rails 8 + Devise 5 + PostgreSQL) · Base URL em desenvolvimento: <code>http://localhost:3000</code></p>
+  </header>
+
+  <div class="nota">
+    <strong>Como a autenticação funciona:</strong> a API usa <strong>cookie de sessão</strong> do Devise.
+    Faça login em <code>POST /users/sign_in</code> (ou cadastre-se em <code>POST /users</code>) e envie o cookie
+    recebido em todas as chamadas seguintes. No navegador, use <code>fetch(url, { credentials: "same-origin" })</code>;
+    no curl, use <code>-c cookies.txt</code> para salvar e <code>-b cookies.txt</code> para enviar.
+  </div>
+
+  <div class="aviso">
+    <strong>Atenção:</strong>
+    <ul style="margin:.5rem 0 0; padding-left:1.25rem;">
+      <li>O front precisa ser <strong>same-origin</strong> (mesma origem do backend). Não há CORS configurado — chamadas de outro domínio/porta com cookies não funcionarão.</li>
+      <li>Envie sempre os cabeçalhos <code>Content-Type: application/json</code> e <code>Accept: application/json</code>. Sem o <code>Accept</code> correto, as rotas do Devise respondem no fluxo HTML (redirects) em vez de JSON.</li>
+    </ul>
+  </div>
+
+  <h2>1. Autenticação (Devise)</h2>
+
+  <table>
+    <thead>
+      <tr><th>Método</th><th>Rota</th><th>Descrição</th><th>Sucesso</th><th>Erro</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="metodo post">POST</span></td>
+        <td><code>/users</code></td>
+        <td>Cadastro (sign up). Já autentica e devolve o cookie de sessão.</td>
+        <td>201 + usuário</td>
+        <td>422 (validação)</td>
+      </tr>
+      <tr>
+        <td><span class="metodo post">POST</span></td>
+        <td><code>/users/sign_in</code></td>
+        <td>Login. Devolve o cookie de sessão.</td>
+        <td>201 + usuário</td>
+        <td>401 (credenciais inválidas)</td>
+      </tr>
+      <tr>
+        <td><span class="metodo delete">DELETE</span></td>
+        <td><code>/users/sign_out</code></td>
+        <td>Logout (encerra a sessão).</td>
+        <td>204 (sem corpo)</td>
+        <td>401 (ninguém logado)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Cadastro — <code>POST /users</code></h3>
+  <p>Corpo da requisição (o campo <code>password_confirmation</code> deve ser igual a <code>password</code>; senha mínima de 6 caracteres):</p>
+<pre><code>curl -c cookies.txt -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "user": {
+      "name": "Fulano da Silva",
+      "email": "fulano@example.com",
+      "password": "senha123",
+      "password_confirmation": "senha123"
+    }
+  }'</code></pre>
+  <p>Resposta <strong>201 Created</strong>:</p>
+<pre><code>{
+  "id": 1,
+  "email": "fulano@example.com",
+  "name": "Fulano da Silva",
+  "created_at": "2026-07-30T12:00:00.000Z",
+  "updated_at": "2026-07-30T12:00:00.000Z"
+}</code></pre>
+  <p>Resposta <strong>422 Unprocessable Content</strong> (exemplo — e-mail já usado):</p>
+<pre><code>{
+  "errors": {
+    "email": ["has already been taken"],
+    "password_confirmation": ["doesn't match Password"]
+  }
+}</code></pre>
+
+  <h3>Login — <code>POST /users/sign_in</code></h3>
+<pre><code>curl -c cookies.txt -X POST http://localhost:3000/users/sign_in \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{ "user": { "email": "fulano@example.com", "password": "senha123" } }'</code></pre>
+  <p>Sucesso: <strong>201</strong> + JSON do usuário (e cookie de sessão gravado em <code>cookies.txt</code>).</p>
+  <p>Falha: <strong>401</strong> com corpo:</p>
+<pre><code>{ "error": "Invalid Email or password." }</code></pre>
+
+  <h3>Logout — <code>DELETE /users/sign_out</code></h3>
+<pre><code>curl -b cookies.txt -X DELETE http://localhost:3000/users/sign_out \
+  -H "Accept: application/json" -i</code></pre>
+  <p>Sucesso: <strong>204 No Content</strong>. O cookie de sessão deixa de valer.</p>
+
+  <h3>Rotas auxiliares (fluxo HTML e conta própria)</h3>
+  <table>
+    <thead>
+      <tr><th>Método</th><th>Rota</th><th>Descrição</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="metodo get">GET</span></td><td><code>/users/sign_up</code></td><td>Formulário HTML de cadastro.</td></tr>
+      <tr><td><span class="metodo get">GET</span></td><td><code>/users/sign_in</code></td><td>Formulário HTML de login.</td></tr>
+      <tr><td><span class="metodo get">GET</span></td><td><code>/users/edit</code></td><td>Formulário HTML para editar a própria conta.</td></tr>
+      <tr><td><span class="metodo patch">PATCH</span></td><td><code>/users</code></td><td>Atualiza a <strong>própria conta</strong> do usuário logado (exige <code>current_password</code>).</td></tr>
+      <tr><td><span class="metodo delete">DELETE</span></td><td><code>/users</code></td><td>Exclui a <strong>própria conta</strong> do usuário logado.</td></tr>
+      <tr><td><span class="metodo post">POST</span></td><td><code>/users/password</code></td><td>Envia e-mail de recuperação de senha.</td></tr>
+      <tr><td><span class="metodo get">GET</span></td><td><code>/users/password/edit</code></td><td>Formulário de redefinição de senha (via token do e-mail).</td></tr>
+    </tbody>
+  </table>
+
+  <div class="aviso">
+    <strong>Não confunda:</strong> <code>DELETE /users</code> (Devise) exclui a <strong>conta do usuário logado</strong>;
+    <code>DELETE /api/users/:id</code> (CRUD) exclui <strong>qualquer usuário pelo id</strong>. Para o front de
+    gerenciamento, use sempre as rotas <code>/api/users</code>.
+  </div>
+
+  <h2>2. CRUD de Usuários — <code>/api/users</code></h2>
+
+  <p>
+    <strong>Todas as rotas abaixo exigem sessão autenticada.</strong> Sem cookie válido a resposta é
+    <strong>401</strong> com corpo <code>{"error":"You need to sign in or sign up before continuing."}</code>.
+  </p>
+  <p>Formato do usuário retornado em todas as respostas:</p>
+<pre><code>{
+  "id": 1,
+  "name": "Fulano da Silva",
+  "email": "fulano@example.com",
+  "created_at": "2026-07-30T12:00:00.000Z",
+  "updated_at": "2026-07-30T12:00:00.000Z"
+}</code></pre>
+
+  <table>
+    <thead>
+      <tr><th>Método</th><th>Rota</th><th>Descrição</th><th>Códigos</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="metodo get">GET</span></td>
+        <td><code>/api/users</code></td>
+        <td>Lista todos os usuários (ordenados por id).</td>
+        <td>200 · 401</td>
+      </tr>
+      <tr>
+        <td><span class="metodo get">GET</span></td>
+        <td><code>/api/users/:id</code></td>
+        <td>Detalha um usuário.</td>
+        <td>200 · 401 · 404</td>
+      </tr>
+      <tr>
+        <td><span class="metodo post">POST</span></td>
+        <td><code>/api/users</code></td>
+        <td>Cria um usuário. Body: <code>{"user":{name,email,password,password_confirmation}}</code>.</td>
+        <td>201 · 400 · 401 · 422</td>
+      </tr>
+      <tr>
+        <td><span class="metodo patch">PATCH</span></td>
+        <td><code>/api/users/:id</code></td>
+        <td>Atualiza um usuário. Senha em branco/ausente é ignorada (edite só nome/e-mail sem reenviar senha).</td>
+        <td>200 · 400 · 401 · 404 · 422</td>
+      </tr>
+      <tr>
+        <td><span class="metodo delete">DELETE</span></td>
+        <td><code>/api/users/:id</code></td>
+        <td>Exclui um usuário.</td>
+        <td>204 · 401 · 404</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Exemplos</h3>
+
+  <p><strong>Listar</strong> — <code>GET /api/users</code> → 200:</p>
+<pre><code>curl -b cookies.txt http://localhost:3000/api/users</code></pre>
+
+  <p><strong>Criar</strong> — <code>POST /api/users</code> → 201 (ou 422 com erros de validação; ou 400 se faltar a chave <code>user</code>):</p>
+<pre><code>curl -b cookies.txt -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user": {
+      "name": "Beltrano",
+      "email": "beltrano@example.com",
+      "password": "senha123",
+      "password_confirmation": "senha123"
+    }
+  }'</code></pre>
+  <p>Resposta <strong>422</strong> (exemplo):</p>
+<pre><code>{ "errors": { "email": ["can't be blank"], "password": ["can't be blank"] } }</code></pre>
+
+  <p><strong>Atualizar</strong> — <code>PATCH /api/users/:id</code> → 200 (senha omitida = mantém a atual):</p>
+<pre><code>curl -b cookies.txt -X PATCH http://localhost:3000/api/users/2 \
+  -H "Content-Type: application/json" \
+  -d '{ "user": { "name": "Beltrano Editado", "email": "beltrano@example.com" } }'</code></pre>
+
+  <p><strong>Excluir</strong> — <code>DELETE /api/users/:id</code> → 204:</p>
+<pre><code>curl -b cookies.txt -X DELETE http://localhost:3000/api/users/2 -i</code></pre>
+  <p>Resposta <strong>404</strong> (id inexistente):</p>
+<pre><code>{ "error": "Registro nao encontrado" }</code></pre>
+
+  <div class="nota">
+    Se você excluir o <strong>próprio usuário logado</strong> via <code>DELETE /api/users/:id</code>, a sessão
+    deixa de ser válida nas próximas requisições (novo login necessário).
+  </div>
+
+  <h2>3. Telas de gerenciamento (HTML) — <code>/admin/users</code></h2>
+
+  <p>
+    Além da API JSON, o app tem telas HTML prontas para gerenciar usuários. Após um login válido
+    (<code>/users/sign_in</code>) ou cadastro (<code>/users/sign_up</code>), o usuário é
+    <strong>redirecionado automaticamente para <code>/admin/users</code></strong> (tela de lista).
+    Acessar qualquer rota <code>/admin/*</code> sem sessão redireciona para o formulário de login.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Método</th><th>Rota</th><th>Descrição</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="metodo get">GET</span></td><td><code>/admin/users</code></td><td>Lista de usuários com ações de editar/excluir e logout.</td></tr>
+      <tr><td><span class="metodo get">GET</span></td><td><code>/admin/users/new</code></td><td>Formulário de criação de usuário.</td></tr>
+      <tr><td><span class="metodo post">POST</span></td><td><code>/admin/users</code></td><td>Cria o usuário e volta para a lista.</td></tr>
+      <tr><td><span class="metodo get">GET</span></td><td><code>/admin/users/:id/edit</code></td><td>Formulário de edição (senha em branco = mantém a atual).</td></tr>
+      <tr><td><span class="metodo patch">PATCH</span></td><td><code>/admin/users/:id</code></td><td>Atualiza o usuário e volta para a lista.</td></tr>
+      <tr><td><span class="metodo delete">DELETE</span></td><td><code>/admin/users/:id</code></td><td>Exclui o usuário (com confirmação). O usuário da sessão atual não pode se excluir por esta tela.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="nota">
+    Essas telas usam o fluxo HTML padrão (formulários com token CSRF embutido) — não precisam de
+    cabeçalhos especiais. A API JSON <code>/api/users</code> continua disponível para front separado.
+  </div>
+
+  <h2>4. Fluxo completo (curl)</h2>
+<pre><code># 1. Cadastrar (ja loga e salva o cookie)
+curl -s -c cookies.txt -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"user":{"name":"Fulano","email":"fulano@example.com","password":"senha123","password_confirmation":"senha123"}}'
+
+# 2. Listar usuarios (autenticado)
+curl -s -b cookies.txt http://localhost:3000/api/users
+
+# 3. Criar outro usuario
+curl -s -b cookies.txt -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"user":{"name":"Beltrano","email":"beltrano@example.com","password":"senha123","password_confirmation":"senha123"}}'
+
+# 4. Atualizar (senha omitida = inalterada)
+curl -s -b cookies.txt -X PATCH http://localhost:3000/api/users/2 \
+  -H "Content-Type: application/json" \
+  -d '{"user":{"name":"Beltrano Editado","email":"beltrano@example.com"}}'
+
+# 5. Excluir
+curl -s -b cookies.txt -X DELETE http://localhost:3000/api/users/2 -i
+
+# 6. Logout
+curl -s -b cookies.txt -X DELETE http://localhost:3000/users/sign_out \
+  -H "Accept: application/json" -i</code></pre>
+
+  <h2>5. Resumo de códigos de status</h2>
+  <table>
+    <thead>
+      <tr><th>Código</th><th>Significado</th><th>Quando ocorre</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>200</code></td><td>OK</td><td>Listagem, detalhe e atualização com sucesso.</td></tr>
+      <tr><td><code>201</code></td><td>Created</td><td>Cadastro, login e criação de usuário com sucesso.</td></tr>
+      <tr><td><code>204</code></td><td>No Content</td><td>Logout e exclusão com sucesso (sem corpo).</td></tr>
+      <tr><td><code>400</code></td><td>Bad Request</td><td>Corpo sem a chave <code>user</code>.</td></tr>
+      <tr><td><code>401</code></td><td>Unauthorized</td><td>Sem sessão válida, ou credenciais de login inválidas.</td></tr>
+      <tr><td><code>404</code></td><td>Not Found</td><td>Usuário com o <code>:id</code> informado não existe.</td></tr>
+      <tr><td><code>422</code></td><td>Unprocessable Content</td><td>Falha de validação (e-mail duplicado, senha curta, confirmação divergente…).</td></tr>
+    </tbody>
+  </table>
+
+  <footer>
+    Gerada para o projeto <code>teste</code> · Rails 8.0 · Devise 5.0 · PostgreSQL 17 (docker-compose) · Esta página é servida estaticamente em <code>/docs/rotas-front.html</code> (a raiz <code>/</code> redireciona para cá).
+  </footer>
+
+</div>
+</body>
+</html>
